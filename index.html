@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#1f4a2c">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi campo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: práctico, cálido, de campo; se usa desde el celular
+   IDEA: la caravana amarilla — cada animal es una caravana con su número
+   PICTURE: la propia herramienta: tarjetas-caravana, "lo que toca" con días grandes, resultado en plata
+   COLOUR and TYPE: verde pradera dominante, amarillo caravana de acento, rojo solo para atrasos y pérdidas; Archivo + Archivo Narrow
+   LAYOUT: una columna hasta 900px, pestañas abajo en el celular */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0f1712);--panel:light-dark(#f2f5f0,#18231c);--ink:light-dark(#18241c,#e8efe9);--soft:light-dark(#5b6a60,#9db0a3);--line:light-dark(#dfe6dc,#2a3a30);--green:light-dark(#2f6a3f,#5fae74);--deep:light-dark(#1f4a2c,#14301d);--tag:#f4c430;--tagInk:#2a2200;--red:light-dark(#b42318,#ff7a6b)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Archivo,system-ui,sans-serif;overflow-x:clip;padding-bottom:84px}
+h1,h2,h3{font-weight:800;line-height:1.08;margin:0;text-wrap:balance}
+.top{background:var(--deep);color:#fff;padding:20px max(5vw,16px) 24px}
+.top .in{max-width:900px;margin:auto;display:flex;gap:16px;align-items:center}
+.top h1{font-size:clamp(30px,6vw,44px)}.top p{margin:4px 0 0;color:#cfe3d4}
+.top svg{flex:none;width:58px;height:70px}
+main{max-width:900px;margin:auto;padding:18px max(4vw,14px)}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));z-index:5}
+nav button{background:none;border:0;color:var(--soft);font:600 12px Archivo,sans-serif;padding:9px 2px 13px;min-height:58px;cursor:pointer}
+nav button b{display:block;font-size:19px;line-height:1;margin-bottom:4px}
+nav button[aria-current=true]{color:var(--green);box-shadow:inset 0 3px var(--green)}
+@media(min-width:760px){nav{position:sticky;top:0;bottom:auto;border:0;border-bottom:1px solid var(--line)}nav button{min-height:52px;font-size:15px}nav button b{display:none}body{padding-bottom:0}}
+.view{display:none}.view.on{display:block}
+h2{font-size:26px;margin:8px 0 14px}h3.sec{font-size:19px;margin:24px 0 6px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
+.btn{font:700 16px Archivo,sans-serif;border:0;border-radius:12px;padding:12px 18px;min-height:46px;cursor:pointer;background:var(--green);color:#fff}
+.btn.alt{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.btn.tag{background:var(--tag);color:var(--tagInk)}
+.btn.danger{background:none;color:var(--red);border:1px solid var(--red)}
+.btn.sm{padding:8px 14px;min-height:40px;font-size:14px}
+:focus-visible{outline:3px solid var(--tag);outline-offset:2px}
+input,select,textarea{font:16px Archivo,sans-serif;width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:46px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+fieldset{border:1px solid var(--line);border-radius:14px;padding:4px 14px 14px;margin:16px 0 0}
+legend{font-weight:800;padding:0 6px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.chip{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 14px;font:600 14px Archivo,sans-serif;min-height:40px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--green);color:#fff;border-color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;text-align:left;color:var(--ink);font:inherit;width:100%}
+.tagno{display:inline-block;background:var(--tag);color:var(--tagInk);font:700 22px/1 "Archivo Narrow",sans-serif;padding:16px 12px 8px;border-radius:10px 10px 18px 18px;position:relative;letter-spacing:.5px}
+.tagno::before{content:"";position:absolute;top:5px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:var(--panel)}
+.tagno.sc{background:var(--line);color:var(--soft)}
+.card h3{font-size:17px;margin:10px 0 2px}.card small{color:var(--soft);font-size:14px;display:block}
+.baja{opacity:.55}
+.item{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.days{text-align:center;font:700 30px/1 "Archivo Narrow",sans-serif;color:var(--green)}
+.days span{display:block;font:600 12px Archivo,sans-serif;color:var(--soft);margin-top:3px}
+.days.late{color:var(--red)}.days.open{color:var(--tagInk);background:var(--tag);border-radius:12px;padding:8px 0}.days.open span{color:var(--tagInk)}
+.item h3{font-size:17px}.item p{margin:3px 0 0;color:var(--soft);font-size:15px}.item .row{margin-top:8px}
+.empty{background:var(--panel);border-radius:16px;padding:20px;color:var(--soft)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:6px 0 22px}
+.stat{background:var(--panel);border-radius:14px;padding:12px}
+.stat b{display:block;font:700 30px/1 "Archivo Narrow",sans-serif;white-space:nowrap}.stat span{font-size:14px;color:var(--soft)}
+.big{background:var(--deep);color:#fff;border-radius:18px;padding:18px;margin-bottom:14px}
+.big .n{font:700 clamp(34px,8vw,52px)/1 "Archivo Narrow",sans-serif;white-space:nowrap}
+.big .n.neg{color:#ffb3a8}.big .n.pos{color:var(--tag)}.big p{margin:6px 0 0;color:#cfe3d4}
+.lines{width:100%;border-collapse:collapse;font-size:15px}.lines td{padding:7px 0;border-bottom:1px solid var(--line)}.lines td:last-child{text-align:right;white-space:nowrap}
+.lines tr.t td{font-weight:800;border-bottom:0}
+.info{background:var(--panel);border-left:4px solid var(--green);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:15px}
+.info a,a.lk{color:var(--green);font-weight:700}
+.note{font-size:14px;color:var(--soft);margin:6px 0}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.ov{position:fixed;inset:0;background:rgba(10,20,14,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}.ov.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:580px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:20px max(4vw,16px) 28px}
+@media(min-width:600px){.ov{align-items:center}.sheet{border-radius:20px}}
+.two,.three{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:420px){.three{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.checks{max-height:210px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.checks label,.ck{display:flex;gap:10px;align-items:center;font-weight:500;margin:6px 0;min-height:36px}
+.checks input,.ck input{width:22px;min-height:22px;flex:none}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:15px;display:none;z-index:20;max-width:90vw}
+.hist{list-style:none;padding:0;margin:0}.hist li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.money{font:700 18px "Archivo Narrow",sans-serif;white-space:nowrap}
+@media(prefers-reduced-motion:no-preference){.view.on{animation:up .25s ease}@keyframes up{from{opacity:0;transform:translateY(6px)}}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+<svg viewBox="0 0 64 76" aria-hidden="true"><path d="M12 6h40a6 6 0 0 1 6 6v36c0 14-12 24-26 24S6 62 6 48V12a6 6 0 0 1 6-6z" fill="#f4c430"/><path d="M12 6h40a6 6 0 0 1 6 6v4H6v-4a6 6 0 0 1 6-6z" fill="#fff" opacity=".35"/><circle cx="32" cy="16" r="5" fill="#1f4a2c"/><text x="32" y="52" text-anchor="middle" font-family="Archivo Narrow,sans-serif" font-weight="700" font-size="17" fill="#2a2200">UY</text></svg>
+<div><h1>Mi campo</h1><p id="sub">Animales, sanidad, campo, plata y plazos</p></div>
+</div></header>
+<nav>
+<button data-v="inicio" aria-current="true"><b>◉</b>Inicio</button>
+<button data-v="animales"><b>▣</b>Animales</button>
+<button data-v="sanidad"><b>✚</b>Sanidad</button>
+<button data-v="campo"><b>❦</b>Campo</button>
+<button data-v="plata"><b>$</b>Plata</button>
+<button data-v="plazos"><b>▦</b>Plazos</button>
+</nav>
+<main>
+<p class="note" id="estado"></p>
+
+<section class="view on" id="v-inicio">
+<div class="stats" id="stats"></div>
+<div class="row sp"><h2>Lo que toca</h2><span class="note">próximos 45 días y atrasados</span></div>
+<div id="toca"></div>
+<div class="row" style="margin-top:18px"><button class="btn tag" data-act="nuevoTrat">+ Registrar lo que le di</button><button class="btn alt" data-act="nuevoAnimal">+ Agregar animal</button></div>
+</section>
+
+<section class="view" id="v-animales">
+<div class="row sp"><h2>Animales</h2><button class="btn tag" data-act="nuevoAnimal">+ Agregar</button></div>
+<input id="busca" type="search" placeholder="Buscar por caravana, chip, raza o pelaje">
+<div class="chips" id="filtroEsp"></div>
+<div class="grid" id="listaAnimales"></div>
+</section>
+
+<section class="view" id="v-sanidad">
+<div class="row sp"><h2>Sanidad</h2><button class="btn tag" data-act="nuevoTrat">+ Registrar</button></div>
+<h3 class="sec">Próximas dosis</h3><div id="proximas"></div>
+<h3 class="sec">Historial</h3><div class="chips" id="filtroTipo"></div><ul class="hist" id="historial"></ul>
+</section>
+
+<section class="view" id="v-campo">
+<div class="row sp"><h2>Campo y alimentación</h2></div>
+<div class="row"><button class="btn tag" data-act="nuevaAli">+ Alimentación</button><button class="btn alt" data-act="nuevaSiem">+ Siembra o laboreo</button></div>
+<h3 class="sec">Siembras y laboreos</h3><div id="siembras"></div>
+<h3 class="sec">Alimentación</h3><div id="alimentos"></div>
+</section>
+
+<section class="view" id="v-plata">
+<div class="row sp"><h2>Plata</h2><button class="btn tag" data-act="nuevoMov">+ Otro gasto o ingreso</button></div>
+<div class="chips" id="filtroAnio"></div>
+<div id="resumen"></div>
+<h3 class="sec">Animales comprados y vendidos</h3><div id="porAnimal"></div>
+<h3 class="sec">Otros gastos e ingresos</h3><div id="movs"></div>
+<p class="note">Las compras y ventas de cada animal se cargan en su ficha; sanidad, alimentación y siembras suman sus costos solos. Acá cargá solo lo que no entra en eso (luz, alambre, flete, contadora…), así no se cuenta dos veces.</p>
+</section>
+
+<section class="view" id="v-plazos">
+<div class="row sp"><h2>Vencimientos del campo</h2><button class="btn tag" data-act="nuevoVenc">+ Agregar</button></div>
+<div id="fijos"></div>
+<div class="info"><b>Tu registro de productor familiar</b><br>Dura 3 años desde que presentaste la declaración. Poné la fecha y te aviso 60 días antes.
+<label for="fPF">Fecha en que lo presentaste o renovaste</label><input type="date" id="fPF"></div>
+<h3 class="sec">Mis vencimientos</h3>
+<p class="note">Cuotas de contribución, BPS, aftosa, lo que quieras. Si es anual, al marcarlo listo pasa al año siguiente.</p>
+<div id="propios"></div>
+<div class="info">Vacunación contra aftosa: el MGAP anuncia los períodos cada año (en 2026 uno fue del 15 de mayo al 15 de junio). Agregalo acá cuando salga la fecha.</div>
+<p class="note">Fechas tomadas de gub.uy (nov 2026). Confirmalas siempre en el trámite oficial, porque pueden cambiar.</p>
+<h3 class="sec">Copia de seguridad</h3>
+<p class="note">Los datos quedan guardados en este celular o compu. Bajate una copia cada tanto, y usala para pasar todo a otro aparato.</p>
+<div class="row"><button class="btn alt" data-act="exportar">Descargar copia</button><label class="btn alt" style="margin:0;display:inline-flex;align-items:center">Cargar copia<input type="file" id="imp" accept=".json,application/json" style="display:none"></label></div>
+</section>
+</main>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const ESP={Vacuno:['Vaca','Vaquillona','Ternera','Ternero','Novillo','Toro'],Equino:['Yegua','Potranca','Potrilla','Caballo','Padrillo','Potrillo'],Otro:['Otro']};
+const HEMBRA=['Vaca','Vaquillona','Ternera','Yegua','Potranca','Potrilla'];
+const TIPOS=['Vacuna','Mosca / bichera','Colirio (ojos)','Desparasitante','Garrapata','Vitaminas','Curación','Otro'];
+const ALIM=['Campo natural','Pradera o verdeo plantado','Fardo','Ración','Silo','Otro'];
+const PREP=['Siembra directa','Arado','Disquera','Rastra','Cincel','Al voleo','Otro'];
+const MON=['US$','$'];
+const CATM={gasto:['Flete','Alambre y mejoras','Luz y agua','Veterinario','Combustible','Impuestos','Otro gasto'],ingreso:['Leche','Otro ingreso']};
+const COLS=['animales','tratamientos','vencimientos','campo','movimientos'];
+const S={animales:[],tratamientos:[],vencimientos:[],campo:[],movimientos:[],config:{}};
+const UI={v:'inicio',esp:'Todos',tipo:'Todos',q:'',anio:String(new Date().getFullYear())};
+let DB=null;
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const pd=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d)};
+const hoy=()=>iso(new Date());
+const dias=s=>Math.round((pd(s)-pd(hoy()))/864e5);
+const fmt=s=>s?pd(s).toLocaleDateString('es-UY',{day:'numeric',month:'short',year:'numeric'}):'';
+const num=v=>{const n=parseFloat(String(v??'').replace(',','.'));return isFinite(n)?n:0};
+const plata=(n,m)=>(m||'US$')+' '+Math.round(n).toLocaleString('es-UY');
+const nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const sinCar=a=>!a.caravana||/^s\/?c$/i.test(String(a.caravana).trim());
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',2800)};
+
+// ---------- guardado ----------
+const SEED=[["s/c","","Ternera","Hembra","","","Edad en la planilla: 1 mes"],["s/c","","Ternera","Hembra","","","Edad en la planilla: 1 mes"],["s/c","","Ternera","Hembra","Pampa","",""],["s/c","","Ternera","Hembra","Pampa","","Edad en la planilla: 8 meses"],["s/c","","Ternera","Hembra","Pampa","","Edad en la planilla: 4 meses"],["s/c","","Ternero","Macho","","","Edad en la planilla: 4 meses"],["s/c","","Ternero","Macho","","","Edad en la planilla: 2 meses"],["6017","6796","Ternero","Macho","Pampa","",""],["5121","7764","Vaca","Hembra","Cruza","",""],["1448","2638","Vaca","Hembra","Cruza","","Ojo: hay otra vaca con caravana 1448 (chip 2620). Revisar."],["2920","7762","Vaca","Hembra","Cruza","Caravana verde",""],["4108","5258","Vaca","Hembra","Pampa","",""],["3756","3335","Vaca","Hembra","Pampa","Colorada",""],["2472","3325","Vaca","Hembra","Pampa","Colorada",""],["1448","2620","Vaca","Hembra","Pampa","Colorada","Ojo: hay otra vaca con caravana 1448 (chip 2638). Revisar."],["2252","2569","Vaca","Hembra","Pampa","Negra",""],["s/c","","Vaca","Hembra","Pampa","Negra",""]].map((r,i)=>({id:'p'+String(i+1).padStart(2,'0'),caravana:r[0],chip:r[1],especie:'Vacuno',categoria:r[2],sexo:r[3],raza:r[4],senas:r[5],estado:'activo',notas:r[6]}));
+function loadLocal(){let raw=null;try{raw=localStorage.getItem('micampo')}catch(e){}if(raw){try{Object.assign(S,JSON.parse(raw))}catch(e){}}else{S.animales=SEED;saveLocal()}}
+function saveLocal(){try{localStorage.setItem('micampo',JSON.stringify(S))}catch(e){}}
+async function guardar(col,obj){
+  const o=JSON.parse(JSON.stringify(obj));
+  if(!DB){const L=S[col];const i=L.findIndex(x=>x.id===o.id);i<0?L.push(o):L[i]=o;saveLocal();render();return}
+  const {id,...body}=o;
+  try{await DB.collection(col).doc(id).set(body)}catch(e){toast(e.code==='quota_exceeded'?'Se llenó el espacio de la app.':'No se pudo guardar. Probá de nuevo.')}
+}
+async function borrar(col,id){
+  if(!DB){S[col]=S[col].filter(x=>x.id!==id);saveLocal();render();return}
+  try{await DB.collection(col).doc(id).delete()}catch(e){toast('No se pudo borrar.')}
+}
+async function guardarConfig(c){
+  S.config=c;if(!DB){saveLocal();render();return}
+  try{await DB.doc('config/general').set(c)}catch(e){toast('No se pudo guardar la fecha.')}
+}
+async function init(){
+  render();
+  try{DB=window.claude&&claude.use?await claude.use('db'):null}catch(e){DB=null}
+  if(!DB){loadLocal();render();return}
+  const timer=setTimeout(()=>$('#estado').textContent='Todavía no pude traer tus datos; revisá la conexión.',10000);
+  const ok=()=>{clearTimeout(timer);$('#estado').textContent=''};
+  for(const c of COLS){
+    DB.collection(c).onSnapshot(s=>{S[c]=s.docs.map(d=>({id:d.id,...d.data()}));if(!s.metadata.fromCache)ok();render()},
+      ()=>{clearTimeout(timer);$('#estado').textContent='No se pudieron cargar los datos.'});
+  }
+  DB.doc('config/general').onSnapshot(d=>{S.config=d.exists?{...d.data()}:{};render()},()=>{});
+}
+
+// ---------- calendario fijo ----------
+function ventana(m1,d1,m2,d2){const t=pd(hoy()),y=t.getFullYear();let s=new Date(y,m1,d1),e=new Date(y,m2,d2);if(t>e){s=new Date(y+1,m1,d1);e=new Date(y+1,m2,d2)}return[iso(s),iso(e)]}
+function fijos(){
+  const out=[];let [a,b]=ventana(6,1,6,31);
+  out.push({t:'Declaración jurada DICOSE',desde:a,hasta:b,txt:'Del 1 al 31 de julio. Se declaran los animales que tenías al 30 de junio. Es obligatoria aunque no tengas animales. En papel (formulario A1) en oficinas DICOSE o MGAP, o en línea en el portal del SNIG.',src:'https://www.gub.uy/tramites/presentacion-declaracion-jurada-anual-dicose'});
+  [a,b]=ventana(0,1,3,30);
+  out.push({t:'Exoneración de Contribución Rural (productor familiar, Canelones)',desde:a,hasta:b,txt:'Primeros 120 días del año (hasta fin de abril). Llevás el certificado de productor familiar del MGAP (original) y la contribución al día o con convenio al día. Exonera hasta las primeras 50 ha índice CONEAT 100, si en total no pasás las 200.',src:'https://www.gub.uy/tramites/exoneracion-contribucion-inmobiliaria-rural-productores-familiares-canelones'});
+  if(S.config.fechaPF){const v=pd(S.config.fechaPF);v.setFullYear(v.getFullYear()+3);const d=new Date(v);d.setDate(d.getDate()-60);
+    out.push({t:'Renovar registro de productor familiar',desde:iso(d),hasta:iso(v),txt:'Vence a los 3 años. Si vence, se da de baja solo y se pierde la calidad de productor familiar (y con eso la exoneración). Se renueva con un formulario nuevo en el MGAP; no tiene costo.',src:'https://www.gub.uy/tramites/registro-productores-familiares-agropecuarios'})}
+  return out;
+}
+function diasBox(desde,hasta){
+  const dh=dias(hasta),dd=dias(desde);
+  if(dh<0)return `<div class="days late">${-dh}<span>días atrasado</span></div>`;
+  if(dd<=0)return `<div class="days open">${dh}<span>días para cerrar</span></div>`;
+  return `<div class="days">${dd}<span>${dd===1?'día':'días'}</span></div>`;
+}
+const estadoVentana=f=>dias(f.desde)<=0?`Abierto hasta el ${fmt(f.hasta)}`:`Abre el ${fmt(f.desde)} · cierra el ${fmt(f.hasta)}`;
+
+// ---------- helpers ----------
+const animal=id=>S.animales.find(a=>a.id===id);
+const nombreA=a=>a?((sinCar(a)?'s/c':'N° '+a.caravana)+(a.nombre?' · '+a.nombre:' · '+a.categoria+(a.raza?' '+a.raza:''))):'(animal borrado)';
+const quienes=t=>t.todos?'Todos los animales':(t.animales||[]).map(id=>nombreA(animal(id))).join(', ');
+const activos=()=>S.animales.filter(a=>a.estado!=='baja');
+const pendientes=()=>S.tratamientos.filter(t=>t.proxima&&!t.proxHecha).sort((a,b)=>a.proxima<b.proxima?-1:1);
+const ordenA=(a,b)=>(sinCar(a)-sinCar(b))||String(a.caravana).localeCompare(String(b.caravana),'es',{numeric:true});
+const totCompra=a=>num(a.cTotal)||num(a.cKilos)*num(a.cPk);
+const totVenta=a=>num(a.vTotal)||num(a.vKilos)*num(a.vPk);
+const costoSiem=c=>num(c.costoTractor)+num(c.costoSemilla)+num(c.costoFert)+num(c.costoOtros);
+const costoCampo=c=>c.clase==='siembra'?costoSiem(c):num(c.costo);
+const enAnio=f=>UI.anio==='Todo'||(f&&String(f).slice(0,4)===UI.anio);
+
+// ---------- render ----------
+function render(){
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.v===UI.v));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+UI.v));
+  const act=activos(),cuenta=c=>act.filter(a=>a.categoria===c).length;
+  $('#stats').innerHTML=[[act.length,'animales'],[cuenta('Vaca'),'vacas'],[cuenta('Ternera')+cuenta('Ternero'),'terneros'],[pendientes().filter(t=>dias(t.proxima)<=7).length,'dosis esta semana']].map(([n,l])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+  $('#sub').textContent=act.length?`${act.length} animales en el campo`:'Animales, sanidad, campo, plata y plazos';
+  // inicio
+  const items=[];
+  pendientes().forEach(t=>{if(dias(t.proxima)<=45)items.push({f:t.proxima,html:`${diasBox(t.proxima,t.proxima)}<div><h3>${esc(t.tipo)}${t.producto?' · '+esc(t.producto):''}</h3><p>${esc(quienes(t))} · toca el ${fmt(t.proxima)}</p><div class="row"><button class="btn sm" data-act="hecha" data-id="${esc(t.id)}">Ya se lo di</button></div></div>`})});
+  fijos().forEach(f=>{if(dias(f.desde)<=45)items.push({f:f.desde,html:`${diasBox(f.desde,f.hasta)}<div><h3>${esc(f.t)}</h3><p>${esc(estadoVentana(f))}</p></div>`})});
+  S.vencimientos.filter(v=>!v.hecho&&dias(v.fecha)<=45).forEach(v=>items.push({f:v.fecha,html:`${diasBox(v.fecha,v.fecha)}<div><h3>${esc(v.titulo)}</h3><p>Vence el ${fmt(v.fecha)}${v.notas?' · '+esc(v.notas):''}</p><div class="row"><button class="btn sm" data-act="vencHecho" data-id="${esc(v.id)}">Listo</button></div></div>`}));
+  items.sort((a,b)=>a.f<b.f?-1:1);
+  $('#toca').innerHTML=items.length?items.map(i=>`<div class="item">${i.html}</div>`).join(''):`<div class="empty">Nada urgente en las próximas semanas. Cuando registres una vacuna con fecha de próxima dosis, aparece acá.</div>`;
+  // animales
+  $('#filtroEsp').innerHTML=[['Todos','Todos'],['Vacuno','Vacunos'],['Equino','Caballos'],['Otro','Otros'],['De baja','Vendidos / de baja']].map(([k,l])=>`<button class="chip" data-esp="${k}" aria-pressed="${UI.esp===k}">${l}</button>`).join('');
+  const q=UI.q.toLowerCase();
+  const lista=S.animales.filter(a=>UI.esp==='De baja'?a.estado==='baja':(a.estado!=='baja'&&(UI.esp==='Todos'||a.especie===UI.esp)))
+    .filter(a=>!q||[a.caravana,a.chip,a.nombre,a.raza,a.senas,a.categoria].join(' ').toLowerCase().includes(q)).sort(ordenA);
+  $('#listaAnimales').innerHTML=lista.length?lista.map(a=>`<button class="card ${a.estado==='baja'?'baja':''}" data-act="verAnimal" data-id="${esc(a.id)}"><span class="tagno ${sinCar(a)?'sc':''}">${sinCar(a)?'s/c':esc(a.caravana)}</span><h3>${esc(a.nombre||a.categoria)}${a.raza?' '+esc(a.raza.toLowerCase()):''}</h3><small>${esc([a.senas,a.sexo].filter(Boolean).join(' · '))}</small>${a.chip?`<small>Chip ${esc(a.chip)}</small>`:''}</button>`).join(''):`<div class="empty" style="grid-column:1/-1">${S.animales.length?'No hay animales con ese filtro.':'Todavía no hay animales cargados.'}</div>`;
+  // sanidad
+  const pen=pendientes();
+  $('#proximas').innerHTML=pen.length?pen.map(t=>`<div class="item">${diasBox(t.proxima,t.proxima)}<div><h3>${esc(t.tipo)}${t.producto?' · '+esc(t.producto):''}</h3><p>${esc(quienes(t))}</p><div class="row"><button class="btn sm" data-act="hecha" data-id="${esc(t.id)}">Ya se lo di</button></div></div></div>`).join(''):`<div class="empty">Sin dosis pendientes.</div>`;
+  $('#filtroTipo').innerHTML=['Todos',...TIPOS].map(t=>`<button class="chip" data-tipo="${esc(t)}" aria-pressed="${UI.tipo===t}">${esc(t)}</button>`).join('');
+  const h=S.tratamientos.filter(t=>UI.tipo==='Todos'||t.tipo===UI.tipo).sort((a,b)=>a.fecha<b.fecha?1:-1);
+  $('#historial').innerHTML=h.length?h.map(liTrat).join(''):`<li class="note">Todavía no hay registros.</li>`;
+  // campo
+  const sie=S.campo.filter(c=>c.clase==='siembra').sort((a,b)=>a.fecha<b.fecha?1:-1);
+  $('#siembras').innerHTML=sie.length?sie.map(c=>`<div class="item"><div class="days" style="font-size:22px">${esc(c.ha||'–')}<span>hectáreas</span></div><div><h3>${esc(c.cultivo||'Siembra')}${c.potrero?' · '+esc(c.potrero):''}</h3><p>${fmt(c.fecha)} · ${esc(c.prep||'')}${c.horas?' · '+esc(c.horas)+' h de tractor':''}</p><p>Tractor ${plata(num(c.costoTractor),c.moneda)} · Semilla ${plata(num(c.costoSemilla),c.moneda)} · Fertilizante ${plata(num(c.costoFert),c.moneda)}</p><div class="row"><span class="money">Total ${plata(costoSiem(c),c.moneda)}</span><button class="btn alt sm" data-act="editCampo" data-id="${esc(c.id)}">Ver / editar</button></div></div></div>`).join(''):`<div class="empty">Cargá cada siembra con cómo preparaste la tierra, horas de tractor, semillas y fertilizante.</div>`;
+  const ali=S.campo.filter(c=>c.clase!=='siembra').sort((a,b)=>a.fecha<b.fecha?1:-1);
+  $('#alimentos').innerHTML=ali.length?`<ul class="hist">${ali.map(c=>`<li><b>${fmt(c.fecha)}${c.hasta?' al '+fmt(c.hasta):''} · ${esc(c.alimento)}</b>${c.potrero?' — '+esc(c.potrero):''}${c.cantidad?' · '+esc(c.cantidad):''}${num(c.costo)?' · <span class="money">'+plata(num(c.costo),c.moneda)+'</span>':''}<br><span class="note">${esc(quienes(c))}${c.notas?' · '+esc(c.notas):''}</span> <button class="chip" style="min-height:32px;padding:4px 10px" data-act="editCampo" data-id="${esc(c.id)}">Editar</button></li>`).join('')}</ul>`:`<div class="empty">Registrá qué comieron: campo natural, pradera plantada, fardos, ración.</div>`;
+  renderPlata();
+  // plazos
+  $('#fijos').innerHTML=fijos().map(f=>`<div class="item">${diasBox(f.desde,f.hasta)}<div><h3>${esc(f.t)}</h3><p><b>${esc(estadoVentana(f))}</b></p><p>${esc(f.txt)}</p><p><a class="lk" href="${f.src}">Ver trámite en gub.uy</a></p></div></div>`).join('');
+  if(document.activeElement!==$('#fPF'))$('#fPF').value=S.config.fechaPF||'';
+  const pv=[...S.vencimientos].sort((a,b)=>a.fecha<b.fecha?-1:1);
+  $('#propios').innerHTML=pv.length?pv.map(v=>`<div class="item ${v.hecho?'baja':''}">${v.hecho?'<div class="days">✓<span>hecho</span></div>':diasBox(v.fecha,v.fecha)}<div><h3>${esc(v.titulo)}</h3><p>${fmt(v.fecha)}${v.anual?' · todos los años':''}${v.notas?' · '+esc(v.notas):''}</p><div class="row">${v.hecho?'':`<button class="btn sm" data-act="vencHecho" data-id="${esc(v.id)}">Listo</button>`}<button class="btn alt sm" data-act="editVenc" data-id="${esc(v.id)}">Editar</button></div></div></div>`).join(''):`<div class="empty">Agregá tus propios plazos: cuotas de contribución, BPS, la aftosa, etc.</div>`;
+}
+function renderPlata(){
+  const anios=new Set([String(new Date().getFullYear())]);
+  const fechas=[...S.animales.flatMap(a=>[a.cFecha,a.vFecha]),...S.tratamientos.map(t=>t.fecha),...S.campo.map(c=>c.fecha),...S.movimientos.map(m=>m.fecha)];
+  fechas.forEach(f=>f&&anios.add(String(f).slice(0,4)));
+  $('#filtroAnio').innerHTML=[...[...anios].sort().reverse(),'Todo'].map(y=>`<button class="chip" data-anio="${y}" aria-pressed="${UI.anio===y}">${y==='Todo'?'Todos los años':y}</button>`).join('');
+  const R={};const add=(m,tipo,cat,n)=>{if(!n)return;m=m||'US$';R[m]=R[m]||{ingreso:{},gasto:{}};R[m][tipo][cat]=(R[m][tipo][cat]||0)+n};
+  S.animales.forEach(a=>{if(enAnio(a.cFecha))add(a.cMon,'gasto','Compra de animales',totCompra(a));if(a.vFecha&&enAnio(a.vFecha))add(a.vMon,'ingreso','Venta de animales',totVenta(a))});
+  S.tratamientos.forEach(t=>{if(enAnio(t.fecha))add(t.moneda,'gasto','Sanidad',num(t.costo))});
+  S.campo.forEach(c=>{if(enAnio(c.fecha))add(c.moneda,'gasto',c.clase==='siembra'?'Siembras y laboreos':'Alimentación',costoCampo(c))});
+  S.movimientos.forEach(m=>{if(enAnio(m.fecha))add(m.moneda,m.tipo,m.categoria,num(m.monto))});
+  const ms=Object.keys(R);
+  $('#resumen').innerHTML=ms.length?ms.map(m=>{const r=R[m],ti=Object.values(r.ingreso).reduce((a,b)=>a+b,0),tg=Object.values(r.gasto).reduce((a,b)=>a+b,0),d=ti-tg;
+    const filas=(o)=>Object.entries(o).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${plata(v,m)}</td></tr>`).join('');
+    return `<div class="big"><div class="n ${d<0?'neg':'pos'}">${d<0?'−':''}${plata(Math.abs(d),m)}</div><p>${d<0?'Pérdida':d>0?'Ganancia':'Sin diferencia'} ${UI.anio==='Todo'?'total':'en '+UI.anio} · en ${m==='$'?'pesos':'dólares'}</p></div>
+    <div class="two" style="gap:0 22px"><table class="lines"><tr><td colspan="2"><b>Entró</b></td></tr>${filas(r.ingreso)}<tr class="t"><td>Total</td><td class="pos">${plata(ti,m)}</td></tr></table>
+    <table class="lines"><tr><td colspan="2"><b>Salió</b></td></tr>${filas(r.gasto)}<tr class="t"><td>Total</td><td class="neg">${plata(tg,m)}</td></tr></table></div>`}).join('<div style="height:20px"></div>')
+    :`<div class="empty">Todavía no hay montos ${UI.anio==='Todo'?'':'en '+UI.anio}. Cargá la compra o venta en la ficha de cada animal, o el costo de una vacuna, una siembra o un fardo.</div>`;
+  const conPlata=S.animales.filter(a=>(totCompra(a)&&enAnio(a.cFecha))||(totVenta(a)&&enAnio(a.vFecha))).sort(ordenA);
+  $('#porAnimal').innerHTML=conPlata.length?`<ul class="hist">${conPlata.map(a=>{const c=totCompra(a),v=totVenta(a),mismo=(a.cMon||'US$')===(a.vMon||'US$');
+    return `<li><b>${esc(nombreA(a))}</b><br><span class="note">${c?'Compra '+plata(c,a.cMon)+(a.cFecha?' ('+fmt(a.cFecha)+')':''):'Sin compra cargada'} · ${v?'Venta '+plata(v,a.vMon)+(a.vFecha?' ('+fmt(a.vFecha)+')':''):'sin vender'}</span>${c&&v&&mismo?` <span class="money ${v-c<0?'neg':'pos'}">${v-c<0?'Pérdida −':'Ganancia '}${plata(Math.abs(v-c),a.vMon)}</span>`:''}</li>`}).join('')}</ul>`:`<div class="empty">Ningún animal con compra o venta cargada en este período.</div>`;
+  const mv=S.movimientos.filter(m=>enAnio(m.fecha)).sort((a,b)=>a.fecha<b.fecha?1:-1);
+  $('#movs').innerHTML=mv.length?`<ul class="hist">${mv.map(m=>`<li><b>${fmt(m.fecha)} · ${esc(m.categoria)}</b> <span class="money ${m.tipo==='gasto'?'neg':'pos'}">${m.tipo==='gasto'?'−':'+'}${plata(num(m.monto),m.moneda)}</span><br><span class="note">${esc(m.detalle||'')}</span> <button class="chip" style="min-height:32px;padding:4px 10px" data-act="editMov" data-id="${esc(m.id)}">Editar</button></li>`).join('')}</ul>`:`<div class="empty">Sin otros movimientos.</div>`;
+}
+function liTrat(t){return `<li><b>${fmt(t.fecha)} · ${esc(t.tipo)}</b>${t.producto?' — '+esc(t.producto):''}${t.dosis?' ('+esc(t.dosis)+')':''}${num(t.costo)?' · <span class="money">'+plata(num(t.costo),t.moneda)+'</span>':''}<br><span class="note">${esc(quienes(t))}${t.proxima?' · próxima: '+fmt(t.proxima)+(t.proxHecha?' ✓':''):''}${t.notas?' · '+esc(t.notas):''}</span> <button class="chip" style="min-height:32px;padding:4px 10px" data-act="editTrat" data-id="${esc(t.id)}">Editar</button></li>`}
+function edad(n){const m=Math.floor((pd(hoy())-pd(n))/(864e5*30.44));if(m<0)return'';return m<24?m+' meses':Math.floor(m/12)+' años'}
+
+// ---------- formularios ----------
+const ov=$('#ov'),sh=$('#sheet');
+function abrir(html){sh.innerHTML=html;ov.classList.add('on');sh.scrollTop=0}
+function cerrar(){ov.classList.remove('on');sh.innerHTML=''}
+const opts=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${esc(o)}</option>`).join('');
+const pie=del=>`<div class="row" style="margin-top:20px"><button class="btn" type="submit">Guardar</button><button class="btn alt" type="button" data-act="cerrar">Cancelar</button>${del?`<button class="btn danger" type="button" data-act="${del}">Borrar</button>`:''}</div>`;
+const inp=(id,name,lab,val,extra='')=>`<div><label for="${id}">${lab}</label><input id="${id}" name="${name}" value="${esc(val)}" ${extra}></div>`;
+const monSel=(id,name,val)=>`<div><label for="${id}">Moneda</label><select id="${id}" name="${name}">${opts(MON,val||'US$')}</select></div>`;
+const quienSel=(o)=>{const act=activos().sort(ordenA);return `<label>¿A quién?</label><div class="checks"><label><input type="checkbox" id="qTodos" ${o.todos?'checked':''}> <b>Todos los animales</b></label>${act.map(a=>`<label><input type="checkbox" class="qA" value="${esc(a.id)}" ${(o.animales||[]).includes(a.id)?'checked':''}> ${esc(nombreA(a))}</label>`).join('')}</div>`};
+const leerQuien=o=>{o.todos=$('#qTodos').checked;o.animales=[...sh.querySelectorAll('.qA:checked')].map(c=>c.value);return o.todos||o.animales.length};
+const yaExiste=(col,id)=>S[col].some(x=>x.id===id);
+
+function formAnimal(a){
+  const nuevo=!a;a=a||{id:nid(),especie:'Vacuno',categoria:'Vaca',sexo:'Hembra',estado:'activo'};
+  abrir(`<form id="fA"><h2>${nuevo?'Nuevo animal':'Editar animal'}</h2>
+  <div class="two">${inp('aC','caravana','N° de caravana (o s/c)',a.caravana,'required')}${inp('aCh','chip','N° de chip',a.chip,'inputmode="numeric"')}</div>
+  <div class="two"><div><label for="aE">Especie</label><select id="aE" name="especie">${opts(Object.keys(ESP),a.especie)}</select></div>
+  <div><label for="aK">Categoría</label><select id="aK" name="categoria">${opts(ESP[a.especie]||ESP.Otro,a.categoria)}</select></div></div>
+  <div class="two"><div><label for="aS">Sexo</label><select id="aS" name="sexo">${opts(['Hembra','Macho'],a.sexo)}</select></div>${inp('aF','nacimiento','Nacimiento',a.nacimiento,'type="date"')}</div>
+  <div class="two">${inp('aR','raza','Raza',a.raza,'placeholder="Pampa, cruza…"')}${inp('aSe','senas','Pelaje o señas',a.senas,'placeholder="Colorada, negra…"')}</div>
+  ${inp('aN','nombre','Nombre (opcional)',a.nombre)}
+  <label for="aNo">Notas</label><textarea id="aNo" name="notas" rows="2">${esc(a.notas)}</textarea>
+  <fieldset><legend>Compra</legend><div class="three">${inp('cF','cFecha','Fecha',a.cFecha,'type="date"')}${inp('cK','cKilos','Kilos',a.cKilos,'inputmode="decimal"')}${inp('cP','cPk','Precio por kilo',a.cPk,'inputmode="decimal"')}</div>
+  <div class="three">${inp('cT','cTotal','Total pagado',a.cTotal,'inputmode="decimal" placeholder="kilos × precio"')}${monSel('cM','cMon',a.cMon)}${inp('cQ','cQuien','A quién',a.cQuien)}</div></fieldset>
+  <fieldset><legend>Venta</legend><div class="three">${inp('vF','vFecha','Fecha',a.vFecha,'type="date"')}${inp('vK','vKilos','Kilos',a.vKilos,'inputmode="decimal"')}${inp('vP','vPk','Precio por kilo',a.vPk,'inputmode="decimal"')}</div>
+  <div class="three">${inp('vT','vTotal','Total cobrado',a.vTotal,'inputmode="decimal" placeholder="kilos × precio"')}${monSel('vM','vMon',a.vMon)}${inp('vQ','vQuien','A quién',a.vQuien)}</div>
+  <p class="note" id="difA"></p></fieldset>
+  <label for="aB">Estado</label><select id="aB" name="estado"><option value="activo" ${a.estado!=='baja'?'selected':''}>En el campo</option><option value="baja" ${a.estado==='baja'?'selected':''}>De baja (vendido o muerto)</option></select>
+  ${pie(nuevo?'':'borrarAnimal')}</form>`);
+  sh.dataset.id=a.id;
+  const calc=()=>{const f=Object.fromEntries(new FormData($('#fA')));const c=totCompra(f),v=totVenta(f);
+    $('#cT').placeholder=c?String(Math.round(c)):'kilos × precio';$('#vT').placeholder=v?String(Math.round(v)):'kilos × precio';
+    $('#difA').innerHTML=c&&v&&f.cMon===f.vMon?`<span class="money ${v-c<0?'neg':'pos'}">${v-c<0?'Pérdida −':'Ganancia '}${plata(Math.abs(v-c),f.vMon)}</span>`:''};
+  $('#fA').addEventListener('input',calc);calc();
+  $('#aE').onchange=e=>{$('#aK').innerHTML=opts(ESP[e.target.value],'');$('#aK').onchange()};
+  $('#aK').onchange=()=>{$('#aS').value=HEMBRA.includes($('#aK').value)?'Hembra':'Macho'};
+  $('#vF').onchange=e=>{if(e.target.value)$('#aB').value='baja'};
+  $('#fA').onsubmit=e=>{e.preventDefault();const o={...a,...Object.fromEntries(new FormData(e.target))};o.caravana=o.caravana.trim();
+    const dup=!sinCar(o)&&S.animales.some(x=>x.id!==o.id&&String(x.caravana).trim()===o.caravana);
+    guardar('animales',o);cerrar();toast(dup?'Guardado. Ojo: hay otro animal con la caravana '+o.caravana:'Animal guardado')};
+}
+function verAnimal(id){
+  const a=animal(id);if(!a)return;
+  const ts=S.tratamientos.filter(t=>t.todos||(t.animales||[]).includes(id)).sort((x,y)=>x.fecha<y.fecha?1:-1);
+  const al=S.campo.filter(c=>c.clase!=='siembra'&&(c.todos||(c.animales||[]).includes(id)));
+  const c=totCompra(a),v=totVenta(a);
+  abrir(`<span class="tagno ${sinCar(a)?'sc':''}">${sinCar(a)?'s/c':esc(a.caravana)}</span><h2 style="margin-top:12px">${esc(a.nombre||a.categoria)}${a.raza?' '+esc(a.raza.toLowerCase()):''}</h2>
+  <p>${esc([a.especie,a.categoria,a.sexo,a.senas].filter(Boolean).join(' · '))}${a.chip?' · chip '+esc(a.chip):''}${a.nacimiento?' · nació el '+fmt(a.nacimiento)+' ('+edad(a.nacimiento)+')':''}${a.estado==='baja'?' · <b>de baja</b>':''}</p>
+  ${a.notas?`<p class="note">${esc(a.notas)}</p>`:''}
+  ${c||v?`<p>${c?'Compra: <b>'+plata(c,a.cMon)+'</b>'+(a.cFecha?' el '+fmt(a.cFecha):''):''}${c&&v?'<br>':''}${v?'Venta: <b>'+plata(v,a.vMon)+'</b>'+(a.vFecha?' el '+fmt(a.vFecha):''):''}${c&&v&&(a.cMon||'US$')===(a.vMon||'US$')?`<br><span class="money ${v-c<0?'neg':'pos'}">${v-c<0?'Pérdida −':'Ganancia '}${plata(Math.abs(v-c),a.vMon)}</span>`:''}</p>`:''}
+  <div class="row"><button class="btn tag" data-act="tratDe" data-id="${esc(id)}">+ Registrar lo que le di</button><button class="btn alt" data-act="editAnimal" data-id="${esc(id)}">Editar / compra y venta</button><button class="btn alt" data-act="cerrar">Cerrar</button></div>
+  <h3 class="sec">Sanidad</h3><ul class="hist">${ts.length?ts.map(liTrat).join(''):'<li class="note">Sin registros todavía.</li>'}</ul>
+  ${al.length?`<h3 class="sec">Alimentación</h3><ul class="hist">${al.map(c=>`<li>${fmt(c.fecha)} · ${esc(c.alimento)}${c.potrero?' — '+esc(c.potrero):''}</li>`).join('')}</ul>`:''}`);
+}
+function formTrat(t,pre){
+  const nuevo=!t||!yaExiste('tratamientos',t.id);t=t||{id:nid(),tipo:'Vacuna',fecha:hoy(),animales:pre?[pre]:[],todos:false};
+  abrir(`<form id="fT"><h2>${nuevo?'¿Qué le diste?':'Editar registro'}</h2>
+  <div class="two"><div><label for="tT">Tipo</label><select id="tT" name="tipo">${opts(TIPOS,t.tipo)}</select></div>${inp('tF','fecha','Fecha',t.fecha,'type="date" required')}</div>
+  <div class="two">${inp('tP','producto','Producto',t.producto,'placeholder="Ej: Ivermectina"')}${inp('tD','dosis','Dosis',t.dosis,'placeholder="Ej: 5 ml"')}</div>
+  ${quienSel(t)}
+  ${inp('tX','proxima','Próxima dosis (si le toca repetir)',t.proxima,'type="date"')}
+  <div class="two">${inp('tC','costo','Costo (opcional)',t.costo,'inputmode="decimal"')}${monSel('tM','moneda',t.moneda||'$')}</div>
+  <label for="tN">Notas</label><textarea id="tN" name="notas" rows="2">${esc(t.notas)}</textarea>
+  ${pie(nuevo?'':'borrarTrat')}</form>`);
+  sh.dataset.id=t.id;
+  $('#fT').onsubmit=e=>{e.preventDefault();const o={...t,...Object.fromEntries(new FormData(e.target))};
+    if(!leerQuien(o)){toast('Elegí al menos un animal o "Todos".');return}
+    if(o.proxima!==t.proxima)o.proxHecha=false;guardar('tratamientos',o);cerrar();toast('Registro guardado')};
+}
+function formAli(c){
+  const nuevo=!c;c=c||{id:nid(),clase:'alimento',alimento:'Campo natural',fecha:hoy(),todos:true,moneda:'$'};
+  abrir(`<form id="fC"><h2>Alimentación</h2>
+  <label for="lA">¿Qué comieron?</label><select id="lA" name="alimento">${opts(ALIM,c.alimento)}</select>
+  <div class="two">${inp('lF','fecha','Desde',c.fecha,'type="date" required')}${inp('lH','hasta','Hasta (opcional)',c.hasta,'type="date"')}</div>
+  <div class="two">${inp('lP','potrero','Potrero o lugar',c.potrero)}${inp('lQ','cantidad','Cantidad',c.cantidad,'placeholder="Ej: 10 fardos"')}</div>
+  ${quienSel(c)}
+  <div class="two">${inp('lC','costo','Costo',c.costo,'inputmode="decimal"')}${monSel('lM','moneda',c.moneda)}</div>
+  <p class="note">Si es una pradera que sembraste, el costo de la siembra va en "Siembra o laboreo"; acá dejalo vacío.</p>
+  <label for="lN">Notas</label><textarea id="lN" name="notas" rows="2">${esc(c.notas)}</textarea>
+  ${pie(nuevo?'':'borrarCampo')}</form>`);
+  sh.dataset.id=c.id;
+  $('#fC').onsubmit=e=>{e.preventDefault();const o={...c,...Object.fromEntries(new FormData(e.target))};if(!leerQuien(o)){toast('Elegí animales o "Todos".');return}guardar('campo',o);cerrar();toast('Guardado')};
+}
+function formSiem(c){
+  const nuevo=!c;c=c||{id:nid(),clase:'siembra',fecha:hoy(),prep:'Siembra directa',moneda:'$'};
+  abrir(`<form id="fS"><h2>Siembra o laboreo</h2>
+  <div class="two">${inp('sP','potrero','Potrero o lugar',c.potrero)}${inp('sF','fecha','Fecha',c.fecha,'type="date" required')}</div>
+  <div class="two">${inp('sC','cultivo','¿Qué se plantó?',c.cultivo,'placeholder="Ej: avena, raigrás, trébol"')}${inp('sH','ha','Hectáreas',c.ha,'inputmode="decimal"')}</div>
+  <div class="two"><div><label for="sPr">Preparación de la tierra</label><select id="sPr" name="prep">${opts(PREP,c.prep)}</select></div>${monSel('sM','moneda',c.moneda)}</div>
+  <label for="sPd">¿Cómo se preparó? (pasadas, herbicida, etc.)</label><textarea id="sPd" name="prepDetalle" rows="2">${esc(c.prepDetalle)}</textarea>
+  <fieldset><legend>Tractor</legend><div class="two">${inp('sHo','horas','Horas',c.horas,'inputmode="decimal"')}${inp('sCt','costoTractor','Costo total',c.costoTractor,'inputmode="decimal"')}</div></fieldset>
+  <fieldset><legend>Semilla</legend><div class="three">${inp('sSe','semilla','Cuál',c.semilla)}${inp('sSk','semillaKg','Kilos',c.semillaKg,'inputmode="decimal"')}${inp('sSc','costoSemilla','Costo',c.costoSemilla,'inputmode="decimal"')}</div></fieldset>
+  <fieldset><legend>Fertilizante</legend><div class="three">${inp('sFe','fert','Cuál',c.fert)}${inp('sFk','fertKg','Kilos',c.fertKg,'inputmode="decimal"')}${inp('sFc','costoFert','Costo',c.costoFert,'inputmode="decimal"')}</div></fieldset>
+  <div class="two">${inp('sO','costoOtros','Otros costos',c.costoOtros,'inputmode="decimal" placeholder="Herbicida, flete…"')}<div><label>Total</label><p class="money" id="sTot" style="margin:10px 0 0"></p></div></div>
+  <label for="sN">Notas</label><textarea id="sN" name="notas" rows="2">${esc(c.notas)}</textarea>
+  ${pie(nuevo?'':'borrarCampo')}</form>`);
+  sh.dataset.id=c.id;
+  const tot=()=>{const f=Object.fromEntries(new FormData($('#fS')));$('#sTot').textContent=plata(costoSiem(f),f.moneda)};
+  $('#fS').addEventListener('input',tot);tot();
+  $('#fS').onsubmit=e=>{e.preventDefault();guardar('campo',{...c,...Object.fromEntries(new FormData(e.target))});cerrar();toast('Siembra guardada')};
+}
+function formMov(m){
+  const nuevo=!m;m=m||{id:nid(),tipo:'gasto',categoria:'Flete',fecha:hoy(),moneda:'$'};
+  abrir(`<form id="fM"><h2>Otro gasto o ingreso</h2>
+  <div class="two"><div><label for="mT">Tipo</label><select id="mT" name="tipo"><option value="gasto" ${m.tipo==='gasto'?'selected':''}>Gasto</option><option value="ingreso" ${m.tipo==='ingreso'?'selected':''}>Ingreso</option></select></div>
+  <div><label for="mC">Categoría</label><select id="mC" name="categoria">${opts(CATM[m.tipo],m.categoria)}</select></div></div>
+  <div class="three">${inp('mF','fecha','Fecha',m.fecha,'type="date" required')}${inp('mMo','monto','Monto',m.monto,'inputmode="decimal" required')}${monSel('mM','moneda',m.moneda)}</div>
+  ${inp('mD','detalle','Detalle',m.detalle)}
+  ${pie(nuevo?'':'borrarMov')}</form>`);
+  sh.dataset.id=m.id;
+  $('#mT').onchange=e=>{$('#mC').innerHTML=opts(CATM[e.target.value],'')};
+  $('#fM').onsubmit=e=>{e.preventDefault();guardar('movimientos',{...m,...Object.fromEntries(new FormData(e.target))});cerrar();toast('Guardado')};
+}
+function formVenc(v){
+  const nuevo=!v;v=v||{id:nid(),fecha:hoy(),anual:false};
+  abrir(`<form id="fV"><h2>${nuevo?'Nuevo vencimiento':'Editar vencimiento'}</h2>
+  ${inp('vTi','titulo','¿Qué vence?',v.titulo,'required placeholder="Ej: 2ª cuota contribución rural"')}
+  ${inp('vFe','fecha','Fecha',v.fecha,'type="date" required')}
+  <label class="ck"><input type="checkbox" id="vA" ${v.anual?'checked':''}> Se repite todos los años</label>
+  <label for="vN">Notas</label><textarea id="vN" name="notas" rows="2">${esc(v.notas)}</textarea>
+  ${pie(nuevo?'':'borrarVenc')}</form>`);
+  sh.dataset.id=v.id;
+  $('#fV').onsubmit=e=>{e.preventDefault();const o={...v,...Object.fromEntries(new FormData(e.target))};o.anual=$('#vA').checked;o.hecho=false;guardar('vencimientos',o);cerrar();toast('Guardado')};
+}
+
+// ---------- eventos ----------
+let armado=null;
+const BORRA={borrarAnimal:'animales',borrarTrat:'tratamientos',borrarVenc:'vencimientos',borrarCampo:'campo',borrarMov:'movimientos'};
+document.addEventListener('click',e=>{
+  const n=e.target.closest('[data-v]');if(n){UI.v=n.dataset.v;render();window.scrollTo(0,0);return}
+  const ch=e.target.closest('[data-esp]');if(ch){UI.esp=ch.dataset.esp;render();return}
+  const tp=e.target.closest('[data-tipo]');if(tp){UI.tipo=tp.dataset.tipo;render();return}
+  const an=e.target.closest('[data-anio]');if(an){UI.anio=an.dataset.anio;render();return}
+  if(e.target===ov){cerrar();return}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const id=b.dataset.id,a=b.dataset.act,sid=sh.dataset.id;
+  if(BORRA[a]){if(armado!==b){armado=b;b.textContent='¿Seguro? Tocá de nuevo';return}armado=null;borrar(BORRA[a],sid);cerrar();toast('Borrado');return}
+  armado=null;
+  const find=(col)=>({...S[col].find(x=>x.id===id)});
+  if(a==='cerrar')cerrar();
+  else if(a==='exportar'){const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='mi-campo-'+hoy()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+  else if(a==='nuevoAnimal')formAnimal();
+  else if(a==='editAnimal')formAnimal(find('animales'));
+  else if(a==='verAnimal')verAnimal(id);
+  else if(a==='nuevoTrat')formTrat();
+  else if(a==='tratDe')formTrat(null,id);
+  else if(a==='editTrat')formTrat(find('tratamientos'));
+  else if(a==='nuevaAli')formAli();
+  else if(a==='nuevaSiem')formSiem();
+  else if(a==='editCampo'){const c=find('campo');c.clase==='siembra'?formSiem(c):formAli(c)}
+  else if(a==='nuevoMov')formMov();
+  else if(a==='editMov')formMov(find('movimientos'));
+  else if(a==='nuevoVenc')formVenc();
+  else if(a==='editVenc')formVenc(find('vencimientos'));
+  else if(a==='hecha'){const t=S.tratamientos.find(x=>x.id===id);if(t){guardar('tratamientos',{...t,proxHecha:true});formTrat({id:nid(),tipo:t.tipo,producto:t.producto,dosis:t.dosis,fecha:hoy(),animales:t.animales,todos:t.todos,moneda:t.moneda});toast('Registrá la dosis que le diste')}}
+  else if(a==='vencHecho'){const v=S.vencimientos.find(x=>x.id===id);if(v){if(v.anual){const d=pd(v.fecha);d.setFullYear(d.getFullYear()+1);guardar('vencimientos',{...v,fecha:iso(d),hecho:false});toast('Pasó al año que viene')}else guardar('vencimientos',{...v,hecho:true})}}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ov.classList.contains('on'))cerrar()});
+$('#busca').addEventListener('input',e=>{UI.q=e.target.value;render()});
+$('#fPF').addEventListener('change',e=>{guardarConfig({...S.config,fechaPF:e.target.value});toast('Fecha guardada')});
+$('#imp').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.animales))throw 0;Object.assign(S,d);saveLocal();render();toast('Copia cargada')}catch(x){toast('Ese archivo no es una copia de Mi campo.')}e.target.value=''});
+init();
+}
+</script>
+</body>
+</html>
